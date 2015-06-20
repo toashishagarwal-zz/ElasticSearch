@@ -1,0 +1,165 @@
+Indexing movies - Create in CRUD
+====================================
+{
+    "title": "Sholay",
+    "director": "Ramesh Sippy",
+    "year": 1974
+}
+
+{
+    "title": "DDLJ",
+    "director": "Aditya Chopra",
+    "year": 1995
+}
+
+{
+    "title": "Shaan",
+    "director": "Ramesh Sippy",
+    "year": 1980
+}
+
+{
+    "title": "Dil toh pagal hai",
+    "director": "Yash Chopra",
+    "year": 1997
+}
+
+{
+    "title": "Saagar",
+    "producer" : "Ramesh Sippy",
+    "director": "Yash Chopra",
+    "year": 1982
+}
+
+
+POST - localhost:9200/movies/movie/
+
+Querying All the results - Display in CRUD
+============================================
+{
+	"query" : {
+		"match_all": {}
+	}
+}
+
+POST - localhost:9200/movies/movie/_search
+
+Please Note: "_search" at the end of the URL. Without this the above JSON will get inserted as a document in the index
+
+
+Updating a document in index - Update in CRUD
+===============================================
+To update a document, we pass on an updated JSON with the same Type & ID.
+E.g. I want to update "Sholay" with a genre- say "Action". Then I will create the updated JSON as below -
+
+{
+    "title": "Sholay",
+    "director": "Ramesh Sippy",
+    "year": 1974,
+    "genre": "Action"
+}
+
+I need to fire my REST as -
+PUT - localhost:9200/movies/movie/AU4PrMthJCkngO3y0jyI
+
+Note: the part after movie is the default ID which ES had created for me
+
+When we update a document, a "version" property is returned in addition to the old response. This version tells us how many times the document has been updated. 
+
+E.g.
+{
+  "_index": "movies",
+  "_type": "movie",
+  "_id": "AU4PrMthJCkngO3y0jyI",
+  "_version": 2,
+  "created": false
+}
+
+The "version" is also used to allow for optimistic concurrency control as we can supply a version in indexing requests as well and ElasticSearch will then only overwrite the document if the supplied version is higher than what's in the index.
+
+Query a specific document
+==========================
+We can query a specific document by providing an ID & query using GET request
+
+GET - localhost:9200/movies/movie/AU4PrMthJCkngO3y0jyI
+
+Response got 
+
+{
+  "_index": "movies",
+  "_type": "movie",
+  "_id": "AU4PrMthJCkngO3y0jyI",
+  "_version": 3,
+  "found": true,
+  "_source": {
+    "title": "Sholay",
+    "director": "Ramesh Sippy",
+    "year": 1974,
+    "genre": "Action"
+  }
+}
+
+Suppose ID does not exist, then we get a response with "found" false
+
+Deleting a document - Delete in CRUD
+=====================================
+We can delete by ID using the same URL as before but changing the method to DELETE
+
+DELETE - localhost:9200/movies/movie/AU4PrMthJCkngO3y0jyI
+
+Please Note: The "version" is updated even in case of DELETE operation
+
+Query a particular string in your documents
+============================================
+E.g. Search all documents for string - Ramesh Sippy
+
+{
+	"query" : {
+			"query_string" : {
+					"query" : "Ramesh Sippy"
+			}
+	}
+}
+
+POST : localhost:9200/_search
+
+Query by a particular attribute
+================================
+E.g. Search all movies directed by "Ramesh Sippy"
+
+{
+	"query" : {
+		"query_string" : {
+			"query" : "Ramesh Sippy",
+			"fields" : ["director"]
+		}
+	}
+}
+
+POST : localhost:9200/_search
+
+
+Filtering example
+==================
+Find all movie made by Ramesh Sippy & then filter only ones which released in 1982 
+
+{
+	"query" : {
+		"filtered" :{	
+				"query": {
+					"query_string" : {
+						"query" : "Ramesh Sippy"
+					}
+				},
+				"filter" : {
+					"term" : { "year" : 1982 }
+				}
+		}
+	}
+}
+
+
+
+
+
+
